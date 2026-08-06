@@ -71,7 +71,6 @@ export type TikTokChannelRead = {
     display_name: (string | null);
     last_checked_at: (string | null);
     backfill_anchor_video_id: (string | null);
-    backfill_remaining: number;
     is_active: boolean;
     pages?: Array<{
         [key: string]: unknown;

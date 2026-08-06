@@ -386,10 +386,6 @@ export const TikTokChannelReadSchema = {
             ],
             title: 'Backfill Anchor Video Id'
         },
-        backfill_remaining: {
-            type: 'integer',
-            title: 'Backfill Remaining'
-        },
         is_active: {
             type: 'boolean',
             title: 'Is Active'
@@ -405,7 +401,7 @@ export const TikTokChannelReadSchema = {
         }
     },
     type: 'object',
-    required: ['id', 'username', 'display_name', 'last_checked_at', 'backfill_anchor_video_id', 'backfill_remaining', 'is_active'],
+    required: ['id', 'username', 'display_name', 'last_checked_at', 'backfill_anchor_video_id', 'is_active'],
     title: 'TikTokChannelRead'
 } as const;
 

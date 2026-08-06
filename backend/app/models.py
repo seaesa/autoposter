@@ -14,7 +14,6 @@ class TikTokChannel(SQLModel, table=True):
     display_name: str | None = None
     last_checked_at: datetime | None = None
     backfill_anchor_video_id: str | None = None
-    backfill_remaining: int = 0
     is_active: bool = True
     created_at: datetime = Field(default_factory=utcnow)
 

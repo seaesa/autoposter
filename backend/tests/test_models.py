@@ -18,7 +18,16 @@ def test_channel_creation(db: Session) -> None:
     db.commit()
     assert ch.id is not None
     assert ch.is_active is True
-    assert ch.backfill_remaining == 0
+
+
+def test_backfill_remaining_column_dropped() -> None:
+    from sqlalchemy import inspect
+
+    from app.core.db import engine
+
+    inspector = inspect(engine)
+    columns = {c["name"] for c in inspector.get_columns("tiktokchannel")}
+    assert "backfill_remaining" not in columns
 
 
 def test_video_meta_unique_per_channel(db: Session) -> None:

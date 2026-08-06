@@ -21,7 +21,6 @@ class TikTokChannelRead(BaseModel):
     display_name: str | None
     last_checked_at: datetime | None
     backfill_anchor_video_id: str | None
-    backfill_remaining: int
     is_active: bool
     pages: list[dict[str, Any]] = []
 

@@ -30,7 +30,6 @@ def _read_channel(db: Session, ch: TikTokChannel) -> TikTokChannelRead:
                 "display_name",
                 "last_checked_at",
                 "backfill_anchor_video_id",
-                "backfill_remaining",
                 "is_active",
             )
         },

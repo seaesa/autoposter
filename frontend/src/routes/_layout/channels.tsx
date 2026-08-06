@@ -158,11 +158,6 @@ const columns: ColumnDef<TikTokChannelRead>[] = [
     },
   },
   {
-    accessorKey: "backfill_remaining",
-    header: "Backfill",
-    cell: ({ row }) => row.original.backfill_remaining || "—",
-  },
-  {
     accessorKey: "is_active",
     header: "Status",
     cell: ({ row }) =>

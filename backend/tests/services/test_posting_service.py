@@ -151,7 +151,9 @@ def test_backfill_enqueues_all_videos_oldest_first(
 
     db.refresh(ch)
     assert ch.backfill_anchor_video_id == "V3"
-    jobs = db.exec(select(PostJob).order_by(PostJob.scheduled_at)).all()
+    jobs = db.exec(
+        select(PostJob).order_by(PostJob.scheduled_at)  # type: ignore[arg-type]
+    ).all()
     metas = {m.id: m.tiktok_video_id for m in db.exec(select(VideoMeta)).all()}
     assert len(jobs) == 3
     assert [metas[j.video_meta_id] for j in jobs] == ["V1", "V2", "V3"]
