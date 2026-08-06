@@ -4,8 +4,12 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel
 
+from app.core.config import settings
 from app.core.db import engine
 from app.main import app
+
+# never start the scheduler loop under tests (would poll TikTok over the network)
+settings.RUN_SCHEDULER = False
 
 
 @pytest.fixture(scope="session", autouse=True)
