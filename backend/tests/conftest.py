@@ -24,6 +24,8 @@ def client() -> Generator[TestClient]:
 
 @pytest.fixture(scope="function")
 def db() -> Generator[Session]:
+    SQLModel.metadata.drop_all(engine)
+    SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         yield session
         session.rollback()
