@@ -39,6 +39,6 @@ def test_video_meta_unique_per_channel(db: Session):
     # second insert of same (channel, video) should raise IntegrityError
     try:
         db.commit()
-        assert False, "expected IntegrityError"
+        raise AssertionError("expected IntegrityError")
     except Exception:
         db.rollback()
