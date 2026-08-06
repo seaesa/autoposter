@@ -19,13 +19,19 @@ From `./backend/` you can install all the dependencies with:
 $ uv sync
 ```
 
+> Note: this repository is a [uv workspace](https://docs.astral.sh/uv/concepts/workspaces/)
+> — the root `pyproject.toml` declares `members = ["backend"]`. So even when you
+> run `uv sync` from `./backend/`, uv resolves the workspace root and creates the
+> virtual environment at the **repository root** (`../.venv`), with the lockfile at
+> `../uv.lock`. Do not create `backend/.venv` manually; use the root one.
+
 Then you can activate the virtual environment with:
 
 ```console
 $ source .venv/bin/activate
 ```
 
-Make sure your editor is using the correct Python virtual environment, with the interpreter at `backend/.venv/bin/python`.
+Make sure your editor is using the correct Python virtual environment, with the interpreter at `.venv/bin/python` (repository root, not `backend/.venv`).
 
 Modify or add SQLModel models for data and SQL tables in `./backend/app/models.py`, API endpoints in `./backend/app/api/`, CRUD (Create, Read, Update, Delete) utils in `./backend/app/crud.py`.
 
