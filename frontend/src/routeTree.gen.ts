@@ -9,36 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as RecoverPasswordRouteImport } from './routes/recover-password'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
-import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
-import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
-import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
+import { Route as LayoutPagesRouteImport } from './routes/_layout/pages'
+import { Route as LayoutLogsRouteImport } from './routes/_layout/logs'
+import { Route as LayoutChannelsRouteImport } from './routes/_layout/channels'
 
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RecoverPasswordRoute = RecoverPasswordRouteImport.update({
-  id: '/recover-password',
-  path: '/recover-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
   getParentRoute: () => rootRouteImport,
@@ -48,126 +24,62 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+const LayoutPagesRoute = LayoutPagesRouteImport.update({
+  id: '/pages',
+  path: '/pages',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutItemsRoute = LayoutItemsRouteImport.update({
-  id: '/items',
-  path: '/items',
+const LayoutLogsRoute = LayoutLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutAdminRoute = LayoutAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const LayoutChannelsRoute = LayoutChannelsRouteImport.update({
+  id: '/channels',
+  path: '/channels',
   getParentRoute: () => LayoutRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
-  '/login': typeof LoginRoute
-  '/recover-password': typeof RecoverPasswordRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/signup': typeof SignupRoute
-  '/admin': typeof LayoutAdminRoute
-  '/items': typeof LayoutItemsRoute
-  '/settings': typeof LayoutSettingsRoute
+  '/channels': typeof LayoutChannelsRoute
+  '/logs': typeof LayoutLogsRoute
+  '/pages': typeof LayoutPagesRoute
 }
 export interface FileRoutesByTo {
-  '/login': typeof LoginRoute
-  '/recover-password': typeof RecoverPasswordRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/signup': typeof SignupRoute
-  '/admin': typeof LayoutAdminRoute
-  '/items': typeof LayoutItemsRoute
-  '/settings': typeof LayoutSettingsRoute
+  '/channels': typeof LayoutChannelsRoute
+  '/logs': typeof LayoutLogsRoute
+  '/pages': typeof LayoutPagesRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
-  '/login': typeof LoginRoute
-  '/recover-password': typeof RecoverPasswordRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/signup': typeof SignupRoute
-  '/_layout/admin': typeof LayoutAdminRoute
-  '/_layout/items': typeof LayoutItemsRoute
-  '/_layout/settings': typeof LayoutSettingsRoute
+  '/_layout/channels': typeof LayoutChannelsRoute
+  '/_layout/logs': typeof LayoutLogsRoute
+  '/_layout/pages': typeof LayoutPagesRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/login'
-    | '/recover-password'
-    | '/reset-password'
-    | '/signup'
-    | '/admin'
-    | '/items'
-    | '/settings'
+  fullPaths: '/' | '/channels' | '/logs' | '/pages'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/login'
-    | '/recover-password'
-    | '/reset-password'
-    | '/signup'
-    | '/admin'
-    | '/items'
-    | '/settings'
-    | '/'
+  to: '/channels' | '/logs' | '/pages' | '/'
   id:
     | '__root__'
     | '/_layout'
-    | '/login'
-    | '/recover-password'
-    | '/reset-password'
-    | '/signup'
-    | '/_layout/admin'
-    | '/_layout/items'
-    | '/_layout/settings'
+    | '/_layout/channels'
+    | '/_layout/logs'
+    | '/_layout/pages'
     | '/_layout/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
-  LoginRoute: typeof LoginRoute
-  RecoverPasswordRoute: typeof RecoverPasswordRoute
-  ResetPasswordRoute: typeof ResetPasswordRoute
-  SignupRoute: typeof SignupRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/recover-password': {
-      id: '/recover-password'
-      path: '/recover-password'
-      fullPath: '/recover-password'
-      preLoaderRoute: typeof RecoverPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_layout': {
       id: '/_layout'
       path: ''
@@ -182,41 +94,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/settings': {
-      id: '/_layout/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof LayoutSettingsRouteImport
+    '/_layout/pages': {
+      id: '/_layout/pages'
+      path: '/pages'
+      fullPath: '/pages'
+      preLoaderRoute: typeof LayoutPagesRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/items': {
-      id: '/_layout/items'
-      path: '/items'
-      fullPath: '/items'
-      preLoaderRoute: typeof LayoutItemsRouteImport
+    '/_layout/logs': {
+      id: '/_layout/logs'
+      path: '/logs'
+      fullPath: '/logs'
+      preLoaderRoute: typeof LayoutLogsRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/admin': {
-      id: '/_layout/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof LayoutAdminRouteImport
+    '/_layout/channels': {
+      id: '/_layout/channels'
+      path: '/channels'
+      fullPath: '/channels'
+      preLoaderRoute: typeof LayoutChannelsRouteImport
       parentRoute: typeof LayoutRoute
     }
   }
 }
 
 interface LayoutRouteChildren {
-  LayoutAdminRoute: typeof LayoutAdminRoute
-  LayoutItemsRoute: typeof LayoutItemsRoute
-  LayoutSettingsRoute: typeof LayoutSettingsRoute
+  LayoutChannelsRoute: typeof LayoutChannelsRoute
+  LayoutLogsRoute: typeof LayoutLogsRoute
+  LayoutPagesRoute: typeof LayoutPagesRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
-  LayoutAdminRoute: LayoutAdminRoute,
-  LayoutItemsRoute: LayoutItemsRoute,
-  LayoutSettingsRoute: LayoutSettingsRoute,
+  LayoutChannelsRoute: LayoutChannelsRoute,
+  LayoutLogsRoute: LayoutLogsRoute,
+  LayoutPagesRoute: LayoutPagesRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 
@@ -225,10 +137,6 @@ const LayoutRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
-  LoginRoute: LoginRoute,
-  RecoverPasswordRoute: RecoverPasswordRoute,
-  ResetPasswordRoute: ResetPasswordRoute,
-  SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

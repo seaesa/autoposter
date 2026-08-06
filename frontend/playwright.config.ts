@@ -1,12 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
-import 'dotenv/config'
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:5173'
-
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -34,54 +28,12 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
-    { name: 'setup', testMatch: /.*\.setup\.ts/ },
-
     {
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        storageState: 'playwright/.auth/user.json',
       },
-      dependencies: ['setup'],
     },
-
-    // {
-    //   name: 'firefox',
-    //   use: {
-    //     ...devices['Desktop Firefox'],
-    //     storageState: 'playwright/.auth/user.json',
-    //   },
-    //   dependencies: ['setup'],
-    // },
-
-    // {
-    //   name: 'webkit',
-    //   use: {
-    //     ...devices['Desktop Safari'],
-    //     storageState: 'playwright/.auth/user.json',
-    //   },
-    //   dependencies: ['setup'],
-    // },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
   ],
 
   /* Run your local dev server before starting the tests */
