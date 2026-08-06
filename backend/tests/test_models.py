@@ -12,7 +12,7 @@ def _utc() -> datetime:
     return datetime.now(UTC)
 
 
-def test_channel_creation(db: Session):
+def test_channel_creation(db: Session) -> None:
     ch = TikTokChannel(username="user1", display_name="User One")
     db.add(ch)
     db.commit()
@@ -21,7 +21,7 @@ def test_channel_creation(db: Session):
     assert ch.backfill_remaining == 0
 
 
-def test_video_meta_unique_per_channel(db: Session):
+def test_video_meta_unique_per_channel(db: Session) -> None:
     ch = TikTokChannel(username="user2")
     db.add(ch)
     db.commit()

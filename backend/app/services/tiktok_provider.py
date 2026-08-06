@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-import yt_dlp as youtube_dl
+import yt_dlp as youtube_dl  # type: ignore[import-untyped]
 
 _BASE_OPTS: dict[str, Any] = {
     "quiet": True,

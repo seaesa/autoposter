@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -36,7 +37,7 @@ class FacebookClient:
         return payload.get("id") or payload.get("post_id") or ""
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=8))
-    async def _post(self, url: str, **kwargs) -> httpx.Response:
+    async def _post(self, url: str, **kwargs: Any) -> httpx.Response:
         http = await self._http_session()
         r = await http.post(url, **kwargs)
         r.raise_for_status()

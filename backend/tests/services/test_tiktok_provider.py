@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 from app.services.tiktok_provider import TikTokProvider
 
 
-def _fake_entry(**overrides):
-    base = {
+def _fake_entry(**overrides: object) -> dict[str, object]:
+    base: dict[str, object] = {
         "id": "7321",
         "title": "My video",
         "description": "desc",
@@ -18,7 +18,7 @@ def _fake_entry(**overrides):
 
 
 @patch("app.services.tiktok_provider.youtube_dl.YoutubeDL")
-def test_list_channel_videos(MockYDL):
+def test_list_channel_videos(MockYDL: MagicMock) -> None:
     fake_entries = [_fake_entry()]
     mock_info = {"entries": fake_entries}
     mock_ydl = MagicMock()
@@ -36,7 +36,7 @@ def test_list_channel_videos(MockYDL):
 
 
 @patch("app.services.tiktok_provider.youtube_dl.YoutubeDL")
-def test_empty_channel(MockYDL):
+def test_empty_channel(MockYDL: MagicMock) -> None:
     mock_ydl = MagicMock()
     mock_ydl.__enter__.return_value.extract_info.return_value = {"entries": None}
     MockYDL.return_value = mock_ydl
