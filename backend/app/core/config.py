@@ -62,12 +62,12 @@ class Settings(BaseSettings):
 
     # --- poster settings ---
     POLL_INTERVAL_MINUTES: int = 30
-    MAX_BACKFILL_VIDEOS: int = 50
-    JOB_SCAN_SECONDS: int = 60
+    BACKFILL_INTERVAL_HOURS: int = 6
     MAX_ATTEMPTS: int = 3
     GRAPH_VERSION: str = "v21.0"
     RUN_SCHEDULER: bool = True
     ENCRYPTION_KEY: str = ""
+    TIKTOK_COOKIES_FILE: str = ""
 
     @field_validator("ENCRYPTION_KEY")
     @classmethod

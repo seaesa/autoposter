@@ -6,7 +6,7 @@ from app.main import app
 
 def test_settings_present() -> None:
     assert settings.POLL_INTERVAL_MINUTES == 30
-    assert settings.MAX_BACKFILL_VIDEOS == 50
+    assert settings.BACKFILL_INTERVAL_HOURS == 6
     assert settings.MAX_ATTEMPTS == 3
     assert settings.ENCRYPTION_KEY
 
