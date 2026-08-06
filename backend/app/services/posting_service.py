@@ -21,6 +21,18 @@ from app.services.quota import QuotaGuard
 from app.services.tiktok_provider import TikTokProvider, TikTokVideo
 
 
+def _unwrap_error(exc: Exception) -> str:
+    # tenacity's RetryError hides the underlying HTTPStatusError from httpx
+    from tenacity import RetryError  # noqa: PLC0415
+
+    while isinstance(exc, RetryError):
+        last = exc.last_attempt.exception()
+        if last is None or not isinstance(last, Exception):
+            break
+        exc = last
+    return str(exc)
+
+
 class PostingService:
     def __init__(self) -> None:
         self.provider = TikTokProvider()
@@ -76,10 +88,8 @@ class PostingService:
 
     # ---- backfill ----
     def backfill_channel(self, db: Session, channel: TikTokChannel) -> None:
-        videos = self.provider.list_channel_videos(
-            channel.username, settings.MAX_BACKFILL_VIDEOS
-        )
-        if not videos:
+        videos = self.provider.list_channel_videos(channel.username, limit=None)
+        if not videos or channel.id is None:
             return
         # newest-first from provider; newest video is "#0" — use as anchor
         newest = videos[0]
@@ -89,13 +99,12 @@ class PostingService:
                 key=lambda v: v.create_time or datetime(1970, 1, 1, tzinfo=UTC),
             )
         channel.backfill_anchor_video_id = newest.video_id
-        if channel.id is None:
-            return
         pages = self.active_pages_for_channel(db, channel.id)
         now = datetime.now(UTC)
-        spread = 10 * 60  # seconds between backfill posts
+        interval = timedelta(hours=settings.BACKFILL_INTERVAL_HOURS)
+        # oldest first, newest (anchor) last; anchor must be enqueued or it
+        # is never posted (poll only picks up videos newer than the anchor)
         older = [v for v in videos if v.video_id != newest.video_id]
-        # enqueue older videos first, latest last; stagger to avoid spam
         queue_order = list(reversed(older)) + [newest]
         for i, vid in enumerate(queue_order):
             meta = self._upsert_meta(db, channel, vid, is_backfill=True)
@@ -106,9 +115,8 @@ class PostingService:
                 channel,
                 meta,
                 pages,
-                scheduled_at=now + timedelta(seconds=i * spread),
+                scheduled_at=now + interval * i,
             )
-        channel.backfill_remaining = max(0, settings.MAX_BACKFILL_VIDEOS - len(videos))
         db.add(channel)
         db.commit()
 
@@ -187,6 +195,8 @@ class PostingService:
             db.add(job)
             db.commit()
             try:
+                if not meta.download_url:
+                    raise ValueError("download URL missing for video")
                 with tempfile.TemporaryDirectory() as tmp:
                     fpath = await asyncio.to_thread(
                         self.provider.download_video, meta.download_url or "", Path(tmp)
@@ -211,7 +221,7 @@ class PostingService:
                 counts["posted"] += 1
             except Exception as exc:  # noqa: BLE001
                 job.attempts += 1
-                job.error_message = str(exc)
+                job.error_message = _unwrap_error(exc)
                 job.status = (
                     "failed" if job.attempts >= settings.MAX_ATTEMPTS else "pending"
                 )
@@ -251,6 +261,11 @@ class PostingService:
                 download_url=vid.download_url,
                 is_backfill=is_backfill,
             )
+            db.add(meta)
+            db.commit()
+            db.refresh(meta)
+        elif vid.download_url and not meta.download_url:
+            meta.download_url = vid.download_url
             db.add(meta)
             db.commit()
             db.refresh(meta)
