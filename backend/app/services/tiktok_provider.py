@@ -7,6 +7,8 @@ from typing import Any
 
 import yt_dlp as youtube_dl  # type: ignore[import-untyped]
 
+from app.core.config import settings
+
 _BASE_OPTS: dict[str, Any] = {
     "quiet": True,
     "no_warnings": True,
@@ -26,14 +28,19 @@ class TikTokVideo:
 
 
 class TikTokProvider:
-    def list_channel_videos(self, username: str, limit: int) -> list[TikTokVideo]:
+    def list_channel_videos(
+        self, username: str, limit: int | None
+    ) -> list[TikTokVideo]:
         url = f"https://www.tiktok.com/@{username}"
         opts: dict[str, Any] = {
             **_BASE_OPTS,
             "extract_flat": "in_playlist",
-            "playlistend": limit,
-            "playlist_items": f"1-{limit}",
         }
+        if limit is not None:
+            opts["playlistend"] = limit
+            opts["playlist_items"] = f"1-{limit}"
+        if settings.TIKTOK_COOKIES_FILE:
+            opts["cookiefile"] = settings.TIKTOK_COOKIES_FILE
         with youtube_dl.YoutubeDL(opts) as ydl:
             info = ydl.extract_info(url, download=False)
         entries = (info or {}).get("entries") or []
@@ -49,7 +56,7 @@ class TikTokProvider:
                     description=e.get("description") or "",
                     thumbnail_url=e.get("thumbnail"),
                     create_time=datetime.fromtimestamp(ts, tz=UTC) if ts else None,
-                    download_url=e.get("webpage_url"),
+                    download_url=e.get("webpage_url") or e.get("url"),
                 )
             )
         return out

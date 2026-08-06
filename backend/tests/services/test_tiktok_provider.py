@@ -1,6 +1,9 @@
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
+import pytest
+
+from app.core.config import settings
 from app.services.tiktok_provider import TikTokProvider
 
 
@@ -43,3 +46,31 @@ def test_empty_channel(MockYDL: MagicMock) -> None:
 
     provider = TikTokProvider()
     assert provider.list_channel_videos("empty", limit=10) == []
+
+
+@patch("app.services.tiktok_provider.youtube_dl.YoutubeDL")
+def test_list_channel_videos_no_limit(MockYDL: MagicMock) -> None:
+    mock_ydl = MagicMock()
+    mock_ydl.__enter__.return_value.extract_info.return_value = {"entries": []}
+    MockYDL.return_value = mock_ydl
+
+    TikTokProvider().list_channel_videos("demo", limit=None)
+
+    opts = MockYDL.call_args.args[0]
+    assert "playlistend" not in opts
+    assert "playlist_items" not in opts
+
+
+@patch("app.services.tiktok_provider.youtube_dl.YoutubeDL")
+def test_list_channel_videos_uses_cookies(
+    MockYDL: MagicMock, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(settings, "TIKTOK_COOKIES_FILE", "/tmp/tiktok-cookies.txt")
+    mock_ydl = MagicMock()
+    mock_ydl.__enter__.return_value.extract_info.return_value = {"entries": []}
+    MockYDL.return_value = mock_ydl
+
+    TikTokProvider().list_channel_videos("demo", limit=10)
+
+    opts = MockYDL.call_args.args[0]
+    assert opts["cookiefile"] == "/tmp/tiktok-cookies.txt"
