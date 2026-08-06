@@ -13,7 +13,7 @@ def test_upload_video_returns_post_id(tmp_path):
     mock_resp.json.return_value = {"id": "12345"}
     mock_resp.raise_for_status.return_value = None
 
-    async def fake_post(url, **kwargs):
+    async def fake_post(_url, **_kwargs):
         return mock_resp
 
     with patch.object(client, "_post", fake_post):
