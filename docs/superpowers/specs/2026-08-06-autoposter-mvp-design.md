@@ -40,7 +40,7 @@ Asyncio loop + DB làm lịch (`scheduled_at`) là đủ: 1 user, vài kênh, kh
 Khi thêm channel (route `POST /tiktok-channels`):
 1. List toàn bộ video cũ của channel (không giới hạn)
 2. `backfill_anchor_video_id` = video mới nhất tại thời điểm thêm
-3. Enqueue video cũ nhất trước: `scheduled_at = now`, kế tiếp `now + BACKFILL_INTERVAL_HOURS`, ... (mặc định 6h/video)
+3. Enqueue video cũ nhất trước: `scheduled_at = now`, kế tiếp `now + BACKFILL_INTERVAL_HOURS`, ... (mặc định 6h/video); **video mới nhất (anchor) enqueue cuối cùng** — nếu không, anchor không bao giờ được đăng vì poll chỉ bắt video mới hơn anchor
 4. `poll_new_videos` sau đó chỉ bắt video mới hơn anchor → đăng ngay (không chờ 6h)
 
 Khác biệt với hiện tại:
