@@ -1,6 +1,6 @@
-import secrets
 from typing import Literal
 
+from cryptography.fernet import Fernet
 from pydantic import PostgresDsn, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     @field_validator("ENCRYPTION_KEY")
     @classmethod
     def _default_encryption_key(cls, v: str) -> str:
-        return v or f"CHANGE_ME_{secrets.token_urlsafe(16)}"
+        return v or Fernet.generate_key().decode("utf-8")
 
 
 settings = Settings()  # type: ignore
