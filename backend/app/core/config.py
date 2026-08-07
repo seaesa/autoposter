@@ -1,12 +1,10 @@
 from typing import Annotated, Any, Literal
 
-from cryptography.fernet import Fernet
 from pydantic import (
     AnyUrl,
     BeforeValidator,
     PostgresDsn,
     computed_field,
-    field_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -62,17 +60,12 @@ class Settings(BaseSettings):
 
     # --- poster settings ---
     POLL_INTERVAL_MINUTES: int = 30
-    BACKFILL_INTERVAL_HOURS: int = 6
+    BACKFILL_INTERVAL_HOURS: float = 6
     MAX_ATTEMPTS: int = 3
     GRAPH_VERSION: str = "v21.0"
     RUN_SCHEDULER: bool = True
-    ENCRYPTION_KEY: str = ""
+    LOG_LEVEL: str = "INFO"
     TIKTOK_COOKIES_FILE: str = ""
-
-    @field_validator("ENCRYPTION_KEY")
-    @classmethod
-    def _default_encryption_key(cls, v: str) -> str:
-        return v or Fernet.generate_key().decode("utf-8")
 
 
 settings = Settings()  # type: ignore

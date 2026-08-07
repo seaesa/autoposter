@@ -28,8 +28,7 @@ def test_create_page(client: TestClient) -> None:
         json={"page_id": "1001", "name": "Fanpage", "access_token": "secret"},
     )
     assert r.status_code == 200
-    assert r.json()["access_token_encrypted"]  # stored encrypted, never plaintext
-    assert "access_token" not in r.json()
+    assert r.json()["access_token"] == "secret"
 
 
 def test_create_mapping(client: TestClient) -> None:

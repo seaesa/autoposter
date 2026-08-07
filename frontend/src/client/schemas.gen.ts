@@ -44,7 +44,7 @@ export const FacebookPageReadSchema = {
             type: 'string',
             title: 'Name'
         },
-        access_token_encrypted: {
+        access_token: {
             anyOf: [
                 {
                     type: 'string'
@@ -53,7 +53,7 @@ export const FacebookPageReadSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Access Token Encrypted'
+            title: 'Access Token'
         },
         max_posts_per_day: {
             type: 'integer',

@@ -18,13 +18,12 @@ Copy `.env.example` (giá trị local chạy được ngay) thành `.env`:
 cp .env.example .env
 ```
 
-Đổi `SECRET_KEY`, `ENCRYPTION_KEY`, password PostgreSQL trước khi deploy. Biến bắt buộc:
+Đổi `SECRET_KEY`, password PostgreSQL trước khi deploy. Biến bắt buộc:
 
 | Biến | Ý nghĩa |
 |---|---|
 | `POSTGRES_SERVER/PORT/USER/PASSWORD/DB` | kết nối PostgreSQL |
 | `SECRET_KEY` | khóa bí mật của app |
-| `ENCRYPTION_KEY` | khóa Fernet mã hóa access token Facebook (để trống sẽ tự sinh) |
 | `DOMAIN`, `ENVIRONMENT` | `localhost`, `local` khi chạy local |
 
 ### 2. Chạy bằng Docker Compose (khuyên dùng)
@@ -70,7 +69,6 @@ File `.env.example` ở root repo chứa các giá trị local chạy được n
 | `RUN_SCHEDULER` | `true` | Bật scheduler nền cùng API (`false` để tắt, chỉ dùng nút "Check now") |
 | `GRAPH_VERSION` | `v21.0` | Phiên bản Facebook Graph API |
 | `TIKTOK_COOKIES_FILE` | *(trống)* | Đường dẫn file cookie TikTok (xem bên dưới) |
-| `ENCRYPTION_KEY` | *(tự sinh)* | Fernet key mã hóa access token Facebook |
 
 ### Cách hoạt động (auto-detect)
 
@@ -113,7 +111,7 @@ Xem chi tiết: [`deployment.md`](deployment.md) — gồm Traefik (HTTPS tự �
 Tóm tắt:
 
 1. Chuẩn bị server, domain trỏ về server.
-2. Cấu hình `.env` production (`DOMAIN=domain.com`, `ENVIRONMENT=production`, `SECRET_KEY` và `ENCRYPTION_KEY` mạnh).
+2. Cấu hình `.env` production (`DOMAIN=domain.com`, `ENVIRONMENT=production`, `SECRET_KEY` mạnh).
 3. Chạy Traefik rồi stack app:
 
 ```bash

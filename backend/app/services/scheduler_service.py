@@ -6,7 +6,10 @@ from datetime import UTC, datetime
 from typing import Any
 
 from app.core.config import settings
+from app.core.logging import get_logger
 from app.services.posting_service import PostingService
+
+logger = get_logger(__name__)
 
 
 class SchedulerService:
@@ -36,11 +39,13 @@ class SchedulerService:
     async def _loop(self) -> None:
         posting = PostingService()
         self._state["running"] = True
+        logger.info("scheduler loop started (interval={}s)", self.run_interval)
         while True:
             try:
-                await self.run_once(posting)
-            except Exception:  # noqa: BLE001
-                pass
+                counts = await self.run_once(posting)
+                logger.info("scheduler run: {}", counts)
+            except Exception as exc:  # noqa: BLE001
+                logger.exception("scheduler run failed: {}", exc)
             await asyncio.sleep(self.run_interval)
 
     async def run_once(self, posting: PostingService | None = None) -> dict[str, int]:
@@ -59,7 +64,13 @@ class SchedulerService:
                 try:
                     posting.poll_new_videos(db, channel)
                     counts["channels"] += 1
-                except Exception:  # noqa: BLE001
+                except Exception as exc:  # noqa: BLE001
+                    logger.error(
+                        "poll failed for channel={} (id={}): {}",
+                        channel.username,
+                        channel.id,
+                        exc,
+                    )
                     continue
             result = await posting.process_due_jobs(db)
             counts["posted"] += result.get("posted", 0)

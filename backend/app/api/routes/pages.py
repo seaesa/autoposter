@@ -3,7 +3,6 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
-from app.core.crypto import encrypt_token
 from app.core.db import get_session
 from app.models import ChannelPageMapping, FacebookPage, TikTokChannel
 from app.schemas import FacebookPageCreate, FacebookPageRead, FacebookPageUpdate
@@ -42,7 +41,7 @@ def create_page(
     page = FacebookPage(
         page_id=payload.page_id,
         name=payload.name,
-        access_token_encrypted=encrypt_token(payload.access_token),
+        access_token=payload.access_token,
         max_posts_per_day=payload.max_posts_per_day,
         min_interval_minutes=payload.min_interval_minutes,
     )
@@ -62,8 +61,6 @@ def update_page(
     if not page:
         raise HTTPException(404, "page not found")
     data = payload.model_dump(exclude_unset=True)
-    if "access_token" in data:
-        data["access_token_encrypted"] = encrypt_token(data.pop("access_token"))
     for k, v in data.items():
         setattr(page, k, v)
     db.add(page)

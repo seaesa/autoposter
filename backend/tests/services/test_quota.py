@@ -2,7 +2,6 @@ from datetime import UTC, datetime
 
 from sqlmodel import Session
 
-from app.core import crypto
 from app.models import FacebookPage
 from app.services.quota import QuotaGuard
 
@@ -15,7 +14,7 @@ def test_daily_posts_count(db: Session) -> None:
     page = FacebookPage(
         page_id="P1",
         name="Page",
-        access_token_encrypted=crypto.encrypt_token("t"),
+        access_token="t",
         max_posts_per_day=10,
         min_interval_minutes=10,
     )

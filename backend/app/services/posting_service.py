@@ -8,7 +8,7 @@ from pathlib import Path
 from sqlmodel import Session, select
 
 from app.core.config import settings
-from app.core.crypto import decrypt_token
+from app.core.logging import get_logger
 from app.models import (
     ChannelPageMapping,
     FacebookPage,
@@ -19,6 +19,8 @@ from app.models import (
 from app.services.facebook_client import FacebookClient
 from app.services.quota import QuotaGuard
 from app.services.tiktok_provider import TikTokProvider, TikTokVideo
+
+logger = get_logger(__name__)
 
 
 def _unwrap_error(exc: Exception) -> str:
@@ -68,6 +70,13 @@ class PostingService:
             )
             db.add(job)
             jobs.append(job)
+        if jobs:
+            logger.debug(
+                "enqueued {} new job(s) for video {} (channel {})",
+                len(jobs),
+                meta.id,
+                channel.id,
+            )
         db.commit()
         return jobs
 
@@ -88,8 +97,12 @@ class PostingService:
 
     # ---- backfill ----
     def backfill_channel(self, db: Session, channel: TikTokChannel) -> None:
+        logger.info("backfill start: channel={} (id={})", channel.username, channel.id)
         videos = self.provider.list_channel_videos(channel.username, limit=None)
         if not videos or channel.id is None:
+            logger.warning(
+                "backfill aborted: no videos fetched for channel={}", channel.username
+            )
             return
         # newest-first from provider; newest video is "#0" — use as anchor
         newest = videos[0]
@@ -106,19 +119,29 @@ class PostingService:
         # is never posted (poll only picks up videos newer than the anchor)
         older = [v for v in videos if v.video_id != newest.video_id]
         queue_order = list(reversed(older)) + [newest]
+        enqueued = 0
         for i, vid in enumerate(queue_order):
             meta = self._upsert_meta(db, channel, vid, is_backfill=True)
             if not meta:
                 continue
-            self.enqueue_video(
+            jobs = self.enqueue_video(
                 db,
                 channel,
                 meta,
                 pages,
                 scheduled_at=now + interval * i,
             )
+            enqueued += len(jobs)
         db.add(channel)
         db.commit()
+        logger.info(
+            "backfill done: channel={} videos={} enqueued={} anchor={} interval={}h",
+            channel.username,
+            len(videos),
+            enqueued,
+            newest.video_id,
+            settings.BACKFILL_INTERVAL_HOURS,
+        )
 
     # ---- poll ----
     def poll_new_videos(self, db: Session, channel: TikTokChannel) -> None:
@@ -127,10 +150,15 @@ class PostingService:
             channel.last_checked_at = datetime.now(UTC)
             db.add(channel)
             db.commit()
+            logger.debug("poll: no videos for channel={}", channel.username)
             return
         if channel.id is None:
             return
         pages = self.active_pages_for_channel(db, channel.id)
+        last_checked = channel.last_checked_at
+        # DB trả datetime naive; create_time từ yt-dlp là aware (UTC)
+        if last_checked is not None and last_checked.tzinfo is None:
+            last_checked = last_checked.replace(tzinfo=UTC)
         for vid in videos:
             # skip anything older than the backfill anchor (already backfilled)
             if (
@@ -141,8 +169,8 @@ class PostingService:
             if (
                 not channel.backfill_anchor_video_id
                 and vid.create_time
-                and channel.last_checked_at
-                and vid.create_time <= channel.last_checked_at
+                and last_checked
+                and vid.create_time <= last_checked
             ):
                 break
             meta = self._upsert_meta(db, channel, vid, is_backfill=False)
@@ -151,6 +179,12 @@ class PostingService:
         channel.last_checked_at = datetime.now(UTC)
         db.add(channel)
         db.commit()
+        logger.debug(
+            "poll: channel={} videos={} last_checked={}",
+            channel.username,
+            len(videos),
+            channel.last_checked_at,
+        )
 
     # ---- worker ----
     async def process_due_jobs(self, db: Session) -> dict[str, int]:
@@ -161,6 +195,7 @@ class PostingService:
             .order_by(PostJob.scheduled_at)  # type: ignore[arg-type]
             .limit(5)
         ).all()
+        logger.info("worker: {} due job(s) found", len(jobs))
         counts: dict[str, int] = {
             "posted": 0,
             "failed": 0,
@@ -175,6 +210,7 @@ class PostingService:
                 db.add(job)
                 db.commit()
                 counts["skipped"] += 1
+                logger.warning("worker: job {} skipped (page inactive/missing)", job.id)
                 continue
             if meta is None:
                 job.status = "skipped"
@@ -182,6 +218,7 @@ class PostingService:
                 db.add(job)
                 db.commit()
                 counts["skipped"] += 1
+                logger.warning("worker: job {} skipped (meta missing)", job.id)
                 continue
             next_at = self.quota.next_allowed(db, page, now)
             if next_at > now:
@@ -190,6 +227,12 @@ class PostingService:
                 db.add(job)
                 db.commit()
                 counts["rescheduled"] += 1
+                logger.info(
+                    "worker: job {} rescheduled to {} (quota on page {})",
+                    job.id,
+                    next_at,
+                    page.page_id,
+                )
                 continue
             job.status = "processing"
             db.add(job)
@@ -198,10 +241,13 @@ class PostingService:
                 if not meta.download_url:
                     raise ValueError("download URL missing for video")
                 with tempfile.TemporaryDirectory() as tmp:
+                    logger.debug(
+                        "worker: job {} downloading {}", job.id, meta.download_url
+                    )
                     fpath = await asyncio.to_thread(
                         self.provider.download_video, meta.download_url or "", Path(tmp)
                     )
-                    token = decrypt_token(page.access_token_encrypted)
+                    token = page.access_token
                     post_id = await self.facebook.upload_video(
                         page.page_id,
                         token,
@@ -219,6 +265,12 @@ class PostingService:
                 db.add(job)
                 db.commit()
                 counts["posted"] += 1
+                logger.info(
+                    "worker: job {} posted to page {} (facebook post {})",
+                    job.id,
+                    page.page_id,
+                    post_id,
+                )
             except Exception as exc:  # noqa: BLE001
                 job.attempts += 1
                 job.error_message = _unwrap_error(exc)
@@ -229,6 +281,14 @@ class PostingService:
                 db.add(job)
                 db.commit()
                 counts["failed" if job.status == "failed" else "rescheduled"] += 1
+                logger.error(
+                    "worker: job {} attempt {}/{} failed (will {}): {}",
+                    job.id,
+                    job.attempts,
+                    settings.MAX_ATTEMPTS,
+                    "give up" if job.status == "failed" else "retry",
+                    job.error_message,
+                )
             finally:
                 job.updated_at = datetime.now(UTC)
                 db.add(job)

@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import DateTime, cast
 from sqlmodel import Session, select
 
-from app.core.crypto import decrypt_token
 from app.core.db import get_session
 from app.models import FacebookPage, PostJob, TikTokChannel, VideoMeta
 from app.schemas import PostJobRead, PostJobUpdate
@@ -65,7 +64,7 @@ async def update_job(
     if job.facebook_post_id and job.status == "posted":
         page = db.get(FacebookPage, job.facebook_page_id)
         if page:
-            token = decrypt_token(page.access_token_encrypted)
+            token = page.access_token
             try:
                 await FacebookClient().update_post(
                     job.facebook_post_id, token, job.title, job.description
@@ -88,7 +87,7 @@ async def delete_job(job_id: int, db: Session = Depends(get_session)) -> dict[st
             try:
                 await FacebookClient().delete_post(
                     job.facebook_post_id,
-                    decrypt_token(page.access_token_encrypted),
+                    page.access_token,
                 )
             except Exception as exc:  # noqa: BLE001
                 job.error_message = f"fb delete failed: {exc}"

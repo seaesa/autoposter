@@ -22,7 +22,7 @@ class FacebookPage(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     page_id: str = Field(index=True, unique=True)
     name: str
-    access_token_encrypted: str
+    access_token: str
     max_posts_per_day: int = 10
     min_interval_minutes: int = 10
     is_active: bool = True

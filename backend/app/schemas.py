@@ -46,7 +46,7 @@ class FacebookPageRead(BaseModel):
     id: int
     page_id: str
     name: str
-    access_token_encrypted: str | None = None
+    access_token: str | None = None
     max_posts_per_day: int
     min_interval_minutes: int
     is_active: bool

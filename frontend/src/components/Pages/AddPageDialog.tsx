@@ -94,8 +94,8 @@ const AddPageDialog = () => {
         <DialogHeader>
           <DialogTitle>Add Facebook Page</DialogTitle>
           <DialogDescription>
-            The access token is encrypted at rest and used only to publish
-            videos.
+            The access token is stored in the database and used only to publish
+            videos. Keep it private.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

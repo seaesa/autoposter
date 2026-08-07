@@ -12,7 +12,7 @@ export type FacebookPageRead = {
     id: number;
     page_id: string;
     name: string;
-    access_token_encrypted?: (string | null);
+    access_token?: (string | null);
     max_posts_per_day: number;
     min_interval_minutes: number;
     is_active: boolean;

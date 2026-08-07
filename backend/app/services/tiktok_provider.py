@@ -8,6 +8,9 @@ from typing import Any
 import yt_dlp as youtube_dl  # type: ignore[import-untyped]
 
 from app.core.config import settings
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 _BASE_OPTS: dict[str, Any] = {
     "quiet": True,
@@ -41,9 +44,16 @@ class TikTokProvider:
             opts["playlist_items"] = f"1-{limit}"
         if settings.TIKTOK_COOKIES_FILE:
             opts["cookiefile"] = settings.TIKTOK_COOKIES_FILE
+        logger.debug(
+            "yt-dlp fetch: {} (limit={}, cookies={})",
+            url,
+            limit,
+            bool(settings.TIKTOK_COOKIES_FILE),
+        )
         with youtube_dl.YoutubeDL(opts) as ydl:
             info = ydl.extract_info(url, download=False)
         entries = (info or {}).get("entries") or []
+        logger.info("yt-dlp fetch: {} returned {} entries", url, len(entries))
         out: list[TikTokVideo] = []
         for e in entries:
             if not e:
@@ -74,7 +84,14 @@ class TikTokProvider:
             "outtmpl": str(dest_dir / "%(id)s.%(ext)s"),
             "format": "best[ext=mp4]/best",
         }
+        logger.debug("yt-dlp download: {}", video_url)
         with youtube_dl.YoutubeDL(opts) as ydl:
             info = ydl.extract_info(video_url, download=True)
         ext = info.get("ext", "mp4")
+        logger.info(
+            "yt-dlp download: {} -> {} ({})",
+            video_url,
+            info.get("id"),
+            info.get("ext"),
+        )
         return dest_dir / f"{info.get('id')}.{ext}"

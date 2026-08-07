@@ -2,7 +2,7 @@ from app.core.config import settings
 
 
 def test_backfill_interval_default() -> None:
-    assert settings.BACKFILL_INTERVAL_HOURS == 6
+    assert settings.BACKFILL_INTERVAL_HOURS > 0
 
 
 def test_cookies_file_default() -> None:

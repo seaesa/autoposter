@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from sqlmodel import Session, select
 
-from app.core import crypto
+from app.core.config import settings
 from app.models import (
     ChannelPageMapping,
     FacebookPage,
@@ -20,7 +20,7 @@ def _seed(db: Session) -> tuple[TikTokChannel, FacebookPage]:
     page = FacebookPage(
         page_id="P1",
         name="Page one",
-        access_token_encrypted=crypto.encrypt_token("tok"),
+        access_token="tok",
         max_posts_per_day=10,
         min_interval_minutes=10,
     )
@@ -114,7 +114,7 @@ def _seed_page(db: Session) -> FacebookPage:
     page = FacebookPage(
         page_id="P1",
         name="Page one",
-        access_token_encrypted=crypto.encrypt_token("tok"),
+        access_token="tok",
         max_posts_per_day=10,
         min_interval_minutes=10,
     )
@@ -158,7 +158,10 @@ def test_backfill_enqueues_all_videos_oldest_first(
     assert len(jobs) == 3
     assert [metas[j.video_meta_id] for j in jobs] == ["V1", "V2", "V3"]
     spacing = jobs[1].scheduled_at - jobs[0].scheduled_at
-    assert spacing == timedelta(hours=6)
+    expected = timedelta(
+        hours=settings.BACKFILL_INTERVAL_HOURS
+    )
+    assert spacing == expected
 
 
 def test_poll_skips_anchor_and_older(
